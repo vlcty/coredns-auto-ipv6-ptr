@@ -11,14 +11,14 @@ import (
 )
 
 func init() {
-	caddy.RegisterPlugin("plugin", caddy.Plugin{
+	caddy.RegisterPlugin("autoipv6ptr", caddy.Plugin{
 		ServerType: "dns",
 		Action:     setup,
 	})
 }
 
 func setup(c *caddy.Controller) error {
-	plugin := AutoIPv6PTR{}
+	v6ptr := AutoIPv6PTR{}
 
 	presetsFilePath := ""
 
@@ -28,7 +28,7 @@ func setup(c *caddy.Controller) error {
 			presetsFilePath = c.RemainingArgs()[0]
 
 		case "suffix":
-			plugin.Suffix = c.RemainingArgs()[0]
+			v6ptr.Suffix = c.RemainingArgs()[0]
 
 		default:
 			// Maybe log something? :-)
@@ -36,11 +36,11 @@ func setup(c *caddy.Controller) error {
 	}
 
 	dnsserver.GetConfig(c).AddPlugin(func(next plugin.Handler) plugin.Handler {
-		plugin.Next = next
-		return plugin
+		v6ptr.Next = next
+		return v6ptr
 	})
 
-	plugin.Presets = make(map[string]string)
+	v6ptr.Presets = make(map[string]string)
 
 	if len(presetsFilePath) != 0 {
 		file, err := os.Open(presetsFilePath)
@@ -54,7 +54,7 @@ func setup(c *caddy.Controller) error {
 	    for scanner.Scan() {
 			presets := strings.Split(scanner.Text(), ";")
 
-			plugin.Presets[presets[0]] = presets[1] + "."
+			v6ptr.Presets[presets[0]] = presets[1] + "."
 	    }
 	}
 

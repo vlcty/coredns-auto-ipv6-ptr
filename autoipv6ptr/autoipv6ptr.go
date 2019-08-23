@@ -18,21 +18,21 @@ type AutoIPv6PTR struct {
 }
 
 // ServeDNS implements the plugin.Handler interface.
-func (plugin AutoIPv6PTR) ServeDNS(ctx context.Context, writer dns.ResponseWriter, request *dns.Msg) (int, error) {
+func (v6ptr AutoIPv6PTR) ServeDNS(ctx context.Context, writer dns.ResponseWriter, request *dns.Msg) (int, error) {
 	if request.Question[0].Qtype != dns.TypePTR {
-		return plugin.NextOrFailure(plugin.Name(), plugin.Next, ctx, writer, request)
+		return plugin.NextOrFailure(v6ptr.Name(), v6ptr.Next, ctx, writer, request)
 	}
 
 	var responsePtrValue string
 
-	if ptrValue, found := plugin.Presets[request.Question[0].Name]; found {
+	if ptrValue, found := v6ptr.Presets[request.Question[0].Name]; found {
 		responsePtrValue = ptrValue
 	} else {
 		responsePtrValue = request.Question[0].Name
 	    responsePtrValue = RemoveIP6DotArpa(responsePtrValue)
 	    responsePtrValue = RemoveDots(responsePtrValue)
 	    responsePtrValue = ReverseString(responsePtrValue)
-	    responsePtrValue += "." + plugin.Suffix + "."
+	    responsePtrValue += "." + v6ptr.Suffix + "."
 	}
 
 	message := new(dns.Msg)
@@ -61,5 +61,4 @@ func ReverseString(input string) string {
     return string(runes)
 }
 
-// Name implements the Handler interface.
-func (a AutoIPv6PTR) Name() string { return "plugin" }
+func (a AutoIPv6PTR) Name() string { return "autoipv6ptr" }
