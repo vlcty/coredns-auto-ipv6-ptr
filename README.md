@@ -33,7 +33,7 @@ Possible plugin arguments:
 |-|-|-|
 | suffix | | The suffix to append when regular translating happens |
 | presetsfile | | The absolute path to the presets file |
-| ttl | 900 | The TTL value the answer should have |
+| ttl | 900 | The TTL value the answer should have in seconds |
 
 Let's say your provider allocated `2001:db8:300:b000::/56` to you. You sliced two subnets out of it:
 
