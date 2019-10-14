@@ -27,6 +27,14 @@ Let's say the plugin receives a PTR request for `4.4.b.d.b.4.e.f.f.f.0.0.4.5.0.5
 
 ## Corefile example
 
+Possible plugin arguments:
+
+| Argument | Default value | Description |
+|-|-|-|
+| suffix | | The suffix to append when regular translating happens |
+| presetsfile | | The absolute path to the presets file |
+| ttl | 900 | The TTL value the answer should have |
+
 Let's say your provider allocated `2001:db8:300:b000::/56` to you. You sliced two subnets out of it:
 
 1) 2001:db8:300:b000::/64 => lan.myhost.tld
@@ -47,6 +55,7 @@ You Corefile would look something like this:
     autoipv6ptr {
         suffix servers.mydomain.tld
         presetsfile /var/lib/coredns/presets.servers.mydomain.tld
+        ttl 60
     }
 }
 ```

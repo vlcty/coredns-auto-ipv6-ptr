@@ -4,6 +4,7 @@ import (
 	"os"
 	"bufio"
 	"strings"
+	"strconv"
 
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
@@ -19,6 +20,7 @@ func init() {
 
 func setup(c *caddy.Controller) error {
 	v6ptr := AutoIPv6PTR{}
+	v6ptr.TTL = 900
 
 	presetsFilePath := ""
 
@@ -29,6 +31,16 @@ func setup(c *caddy.Controller) error {
 
 		case "suffix":
 			v6ptr.Suffix = c.RemainingArgs()[0]
+
+		case "ttl":
+			possibleTTL := c.RemainingArgs()[0]
+			ttl, err := strconv.ParseUint(possibleTTL, 10, 32)
+
+			if err != nil {
+				return plugin.Error("autoipv6ptr", err)
+			} else {
+				v6ptr.TTL = uint32(ttl)
+			}
 
 		default:
 			// Maybe log something? :-)

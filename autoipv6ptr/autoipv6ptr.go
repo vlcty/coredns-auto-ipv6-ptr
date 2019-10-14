@@ -13,6 +13,7 @@ type AutoIPv6PTR struct {
 
 	// Presets are static entries which should not be generated
 	Presets map[string]string
+	TTL uint32
 
 	Suffix string
 }
@@ -37,7 +38,7 @@ func (v6ptr AutoIPv6PTR) ServeDNS(ctx context.Context, writer dns.ResponseWriter
 
 	message := new(dns.Msg)
 	message.SetReply(request)
-	hdr := dns.RR_Header{Name: request.Question[0].Name, Ttl: 900, Class: dns.ClassINET, Rrtype: dns.TypePTR}
+	hdr := dns.RR_Header{Name: request.Question[0].Name, Ttl: v6ptr.TTL, Class: dns.ClassINET, Rrtype: dns.TypePTR}
 	message.Answer = []dns.RR{&dns.PTR{Hdr: hdr, Ptr: responsePtrValue}}
 
 	writer.WriteMsg(message)
