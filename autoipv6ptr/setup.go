@@ -1,16 +1,17 @@
 package autoipv6ptr
 
 import (
-	"os"
 	"bufio"
-	"strings"
-	"strconv"
 	"errors"
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
 
+	"github.com/coredns/caddy"
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
-	"github.com/coredns/caddy"
+	"github.com/miekg/dns"
 )
 
 const AUTOIPV6PTR_PLUGIN_NAME string = "autoipv6ptr"
@@ -81,7 +82,13 @@ func parsePresetsFile(filepath string, v6ptr *AutoIPv6PTR) error {
 		presets := strings.Split(scanner.Text(), ";")
 
 		if len(presets) == 2 {
-			v6ptr.Presets[presets[0]] = presets[1] + "."
+			ip6ArpaValue, reverseError := dns.ReverseAddr(presets[0])
+
+			if reverseError != nil {
+				return reverseError
+			} else {
+				v6ptr.Presets[ip6ArpaValue] = presets[1] + "."
+			}
 		} else {
 			return errors.New(fmt.Sprintf("Presets error: Two items expected in line %d", counter))
 		}
