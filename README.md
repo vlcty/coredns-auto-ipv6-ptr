@@ -9,11 +9,11 @@ Examples:
 
 ## Presets
 
-Each line in a presets file contains a manual override seperated by a comma. The first part contains the request and the second part contains the value which should be returned. For example:
+Each line in a presets file contains a manual override seperated by a comma. The first part contains the IPv6 address and the second part contains the value which should be returned. For example:
 
 ```
-5.4.b.d.b.4.e.f.f.f.0.0.4.5.0.5.2.0.0.b.0.0.3.0.8.b.d.0.1.0.0.2.ip6.arpa.;myhost.mydomain.tld
-6.4.b.d.b.4.e.f.f.f.0.0.4.5.0.5.2.0.0.b.0.0.3.0.8.b.d.0.1.0.0.2.ip6.arpa.;firewall.mydomain.tld
+2001:db8:300:b002:5054:ff:fe4b:db45;myhost.mydomain.tld
+2001:db8:300:b002:5054:ff:fe4b:db44;firewall.mydomain.tld
 ```
 
 ## Translation process

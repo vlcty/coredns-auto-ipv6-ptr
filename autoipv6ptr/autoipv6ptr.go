@@ -2,7 +2,7 @@ package autoipv6ptr
 
 import (
 	"context"
-    "strings"
+	"strings"
 
 	"github.com/coredns/coredns/plugin"
 	"github.com/miekg/dns"
@@ -13,7 +13,7 @@ type AutoIPv6PTR struct {
 
 	// Presets are static entries which should not be generated
 	Presets map[string]string
-	TTL uint32
+	TTL     uint32
 
 	Suffix string
 }
@@ -30,10 +30,10 @@ func (v6ptr AutoIPv6PTR) ServeDNS(ctx context.Context, writer dns.ResponseWriter
 		responsePtrValue = ptrValue
 	} else {
 		responsePtrValue = request.Question[0].Name
-	    responsePtrValue = RemoveIP6DotArpa(responsePtrValue)
-	    responsePtrValue = RemoveDots(responsePtrValue)
-	    responsePtrValue = ReverseString(responsePtrValue)
-	    responsePtrValue += "." + v6ptr.Suffix + "."
+		responsePtrValue = RemoveIP6DotArpa(responsePtrValue)
+		responsePtrValue = RemoveDots(responsePtrValue)
+		responsePtrValue = ReverseString(responsePtrValue)
+		responsePtrValue += "." + v6ptr.Suffix + "."
 	}
 
 	message := new(dns.Msg)
@@ -46,20 +46,20 @@ func (v6ptr AutoIPv6PTR) ServeDNS(ctx context.Context, writer dns.ResponseWriter
 }
 
 func RemoveIP6DotArpa(input string) string {
-    return strings.ReplaceAll(input, ".ip6.arpa.", "")
+	return strings.ReplaceAll(input, ".ip6.arpa.", "")
 }
 
 func RemoveDots(input string) string {
-    return strings.ReplaceAll(input, ".", "")
+	return strings.ReplaceAll(input, ".", "")
 }
 
 func ReverseString(input string) string {
 	// Copied from https://stackoverflow.com/questions/1752414/how-to-reverse-a-string-in-go
-    runes := []rune(input)
-    for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
-        runes[i], runes[j] = runes[j], runes[i]
-    }
-    return string(runes)
+	runes := []rune(input)
+	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+		runes[i], runes[j] = runes[j], runes[i]
+	}
+	return string(runes)
 }
 
 func (a AutoIPv6PTR) Name() string { return "autoipv6ptr" }
