@@ -1,20 +1,6 @@
 # coredns-auto-ipv6-ptr
 
-Some services require that a RDNS request resolves to a PTR record. With this CoreDNS plugin, you can generate these PTR records on the fly based on the requested IPv6 address. The plugin translates the requested address and appends a suffix. Additionally, you can create a so-called presets file to answer with a "real" record if a specific request is received.
-
-Examples:
-
-1) `2001:db8:300:b002:5054:ff:fe4b:db44` could be translated to `20010db80300b002505400fffe4bdb44.mydomain.tld`
-2) `2001:db8:300:b002:5054:ff:fe4b:db45` could be translated to `myhost.mydomain.tld` via the presets file
-
-## Presets
-
-Each line in a presets file contains a manual override seperated by a comma. The first part contains the IPv6 address and the second part contains the value which should be returned. For example:
-
-```
-2001:db8:300:b002:5054:ff:fe4b:db45;myhost.mydomain.tld
-2001:db8:300:b002:5054:ff:fe4b:db44;firewall.mydomain.tld
-```
+Some services require that RDNS requests resolve to PTR records. With this CoreDNS plugin, you can generate these PTR records on the fly based on the requested IPv6 address. The plugin translates the requested address and appends a suffix.
 
 ## Translation process
 
@@ -32,7 +18,6 @@ Possible plugin arguments:
 | Argument | Default value | Description |
 |-|-|-|
 | suffix | | The suffix to append when regular translating happens |
-| presetsfile | | The absolute path to the presets file |
 | ttl | 900 | The TTL value the answer should have in seconds |
 
 Let's say your provider allocated `2001:db8:300:b000::/56` to you. You sliced two subnets out of it:
@@ -54,10 +39,36 @@ You Corefile would look something like this:
     log
     autoipv6ptr {
         suffix servers.mydomain.tld
-        presetsfile /var/lib/coredns/presets.servers.mydomain.tld
         ttl 60
     }
 }
 ```
 
-The suffix is a mandatory argument. The presetsfile is optional. The presets file is read on plugin startup.
+## Working with known hosts
+
+If you have knows hosts you want to return specific PTR records you can do this via the `file` or `secondary` plugin. However there is a catch to this! `file` and `secondary` are so called backends which return NXDOMAIN when no record was found. You can find a patch provided by GitHub user @dorchain in the file `file-fallthrough.patch`. This little patch makes `file` and `secondary` falling through if no record was found. Apply it via git patch from your CoreDNS root directory:
+
+> git apply plugin/autoipv6ptr/file-fallthrough.patch
+
+And build CoreDNS to your needs. Sample Corefile:
+
+```
+0.0.0.b.0.0.3.0.8.b.d.0.1.0.0.2.ip6.arpa {
+    log
+    file your.reverse.zone
+    autoipv6ptr {
+        suffix lan.mydomain.tld
+    }
+}
+
+1.0.0.b.0.0.3.0.8.b.d.0.1.0.0.2.ip6.arpa {
+    log
+    secondary {
+        transfer from your.master.dns
+    }
+    autoipv6ptr {
+        suffix servers.mydomain.tld
+        ttl 60
+    }
+}
+```
