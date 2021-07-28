@@ -1,11 +1,8 @@
 package autoipv6ptr
 
 import (
-	"bufio"
 	"context"
 	"errors"
-	"fmt"
-	"os"
 	"strconv"
 	"strings"
 
@@ -20,9 +17,7 @@ const AUTOIPV6PTR_PLUGIN_NAME string = "autoipv6ptr"
 type AutoIPv6PTR struct {
 	Next plugin.Handler
 
-	// Presets are static entries which should not be generated
-	Presets map[string]string
-	TTL     uint32
+	TTL uint32
 
 	Suffix string
 }
@@ -33,17 +28,11 @@ func (v6ptr AutoIPv6PTR) ServeDNS(ctx context.Context, writer dns.ResponseWriter
 		return plugin.NextOrFailure(v6ptr.Name(), v6ptr.Next, ctx, writer, request)
 	}
 
-	var responsePtrValue string
-
-	if ptrValue, found := v6ptr.Presets[request.Question[0].Name]; found {
-		responsePtrValue = ptrValue
-	} else {
-		responsePtrValue = request.Question[0].Name
-		responsePtrValue = RemoveIP6DotArpa(responsePtrValue)
-		responsePtrValue = RemoveDots(responsePtrValue)
-		responsePtrValue = ReverseString(responsePtrValue)
-		responsePtrValue += "." + v6ptr.Suffix + "."
-	}
+	responsePtrValue := request.Question[0].Name
+	responsePtrValue = RemoveIP6DotArpa(responsePtrValue)
+	responsePtrValue = RemoveDots(responsePtrValue)
+	responsePtrValue = ReverseString(responsePtrValue)
+	responsePtrValue += "." + v6ptr.Suffix + "."
 
 	message := new(dns.Msg)
 	message.SetReply(request)
@@ -83,11 +72,6 @@ func setup(c *caddy.Controller) error {
 
 	for c.Next() {
 		switch c.Val() {
-		case "presetsfile":
-			if err := parsePresetsFile(c.RemainingArgs()[0], &v6ptr); err != nil {
-				return plugin.Error(AUTOIPV6PTR_PLUGIN_NAME, err)
-			}
-
 		case "suffix":
 			suffix := c.RemainingArgs()[0]
 
@@ -116,40 +100,6 @@ func setup(c *caddy.Controller) error {
 		v6ptr.Next = next
 		return v6ptr
 	})
-
-	return nil
-}
-
-func parsePresetsFile(filepath string, v6ptr *AutoIPv6PTR) error {
-	v6ptr.Presets = make(map[string]string)
-
-	file, err := os.Open(filepath)
-
-	if err != nil {
-		return err
-	}
-
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	counter := 0
-
-	for scanner.Scan() {
-		counter++
-		presets := strings.Split(scanner.Text(), ";")
-
-		if len(presets) == 2 {
-			ip6ArpaValue, reverseError := dns.ReverseAddr(presets[0])
-
-			if reverseError != nil {
-				return reverseError
-			} else {
-				v6ptr.Presets[ip6ArpaValue] = presets[1] + "."
-			}
-		} else {
-			return errors.New(fmt.Sprintf("Presets error: Two items expected in line %d", counter))
-		}
-	}
 
 	return nil
 }
