@@ -9,6 +9,7 @@ import (
 	"github.com/coredns/caddy"
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
+	"github.com/coredns/coredns/plugin/pkg/log"
 	"github.com/coredns/coredns/plugin/pkg/nonwriter"
 	"github.com/miekg/dns"
 )
@@ -35,11 +36,13 @@ func (v6ptr AutoIPv6PTR) ServeDNS(ctx context.Context, writer dns.ResponseWriter
 	rcode, err := plugin.NextOrFailure(v6ptr.Name(), v6ptr.Next, ctx, nw, request)
 
 	if err != nil {
-		// Simply return if there was an error.
+		log.Error(err)
 		return rcode, err
+	} else {
+		log.Info("Rcode: ", rcode)
 	}
 
-	if len(nw.Msg.Answer) != 0 {
+	if rcode == dns.RcodeSuccess {
 		writer.WriteMsg(nw.Msg)
 	} else {
 		responsePtrValue := request.Question[0].Name
