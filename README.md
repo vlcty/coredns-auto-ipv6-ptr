@@ -72,3 +72,11 @@ And build CoreDNS to your needs. Sample Corefile:
     }
 }
 ```
+
+## Building a ready-to-use coredns binary using Docker
+
+Using the docker infrastructure it's easy for you to build a working binary with the plugin:
+
+> docker build --pull --no-cache --output type=local,dest=result -f Dockerfile.build .
+
+If everything checks out you'll find an x86_64 binary locally under `result/coredns`.
