@@ -9,8 +9,6 @@ import (
 	"github.com/coredns/caddy"
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
-	"github.com/coredns/coredns/plugin/pkg/log"
-	"github.com/coredns/coredns/plugin/pkg/nonwriter"
 	"github.com/miekg/dns"
 )
 
@@ -30,34 +28,18 @@ func (v6ptr AutoIPv6PTR) ServeDNS(ctx context.Context, writer dns.ResponseWriter
 		return plugin.NextOrFailure(v6ptr.Name(), v6ptr.Next, ctx, writer, request)
 	}
 
-	nw := nonwriter.New(writer)
+	responsePtrValue := request.Question[0].Name
+	responsePtrValue = RemoveIP6DotArpa(responsePtrValue)
+	responsePtrValue = RemoveDots(responsePtrValue)
+	responsePtrValue = ReverseString(responsePtrValue)
+	responsePtrValue += "." + v6ptr.Suffix + "."
 
-	// Call all the next plugin in the chain.
-	rcode, err := plugin.NextOrFailure(v6ptr.Name(), v6ptr.Next, ctx, nw, request)
+	message := new(dns.Msg)
+	message.SetReply(request)
+	hdr := dns.RR_Header{Name: request.Question[0].Name, Ttl: v6ptr.TTL, Class: dns.ClassINET, Rrtype: dns.TypePTR}
+	message.Answer = []dns.RR{&dns.PTR{Hdr: hdr, Ptr: responsePtrValue}}
 
-	if err != nil {
-		log.Error(err)
-		return rcode, err
-	} else {
-		log.Info("Rcode: ", rcode)
-	}
-
-	if rcode == dns.RcodeSuccess {
-		writer.WriteMsg(nw.Msg)
-	} else {
-		responsePtrValue := request.Question[0].Name
-		responsePtrValue = RemoveIP6DotArpa(responsePtrValue)
-		responsePtrValue = RemoveDots(responsePtrValue)
-		responsePtrValue = ReverseString(responsePtrValue)
-		responsePtrValue += "." + v6ptr.Suffix + "."
-
-		message := new(dns.Msg)
-		message.SetReply(request)
-		hdr := dns.RR_Header{Name: request.Question[0].Name, Ttl: v6ptr.TTL, Class: dns.ClassINET, Rrtype: dns.TypePTR}
-		message.Answer = []dns.RR{&dns.PTR{Hdr: hdr, Ptr: responsePtrValue}}
-
-		writer.WriteMsg(message)
-	}
+	writer.WriteMsg(message)
 
 	return 0, nil
 }
