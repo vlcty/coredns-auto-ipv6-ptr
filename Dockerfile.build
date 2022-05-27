@@ -1,13 +1,15 @@
 FROM golang:1.18 AS build-stage
 ARG corednsVersion=1.9.3
 RUN wget https://github.com/coredns/coredns/archive/refs/tags/v${corednsVersion}.tar.gz
-RUN wget https://github.com/vlcty/coredns-auto-ipv6-ptr/archive/refs/heads/master.tar.gz
+ADD . /go/coredns-auto-ipv6-ptr-master/
 RUN tar xzf v${corednsVersion}.tar.gz
-RUN tar xzf master.tar.gz
 WORKDIR /go/coredns-${corednsVersion}
 RUN git apply /go/coredns-auto-ipv6-ptr-master/file-fallthrough.patch
 RUN ln -s /go/coredns-auto-ipv6-ptr-master plugin/autoipv6ptr
-RUN echo -e "autoipv6ptr:autoipv6ptr\nsecondary:secondary\nlog:log" > plugin.cfg
+RUN echo "autoipv6ptr:autoipv6ptr" > plugin.cfg
+RUN echo "secondary:secondary" >> plugin.cfg
+RUN echo "log:log" >> plugin.cfg
+RUN echo "bind:bind" >> plugin.cfg
 RUN go generate coredns.go
 RUN go mod edit -replace github.com/coredns/coredns/plugin/autoipv6ptr=$(pwd)/plugin/autoipv6ptr
 RUN go get
