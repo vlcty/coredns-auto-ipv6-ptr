@@ -41,7 +41,7 @@ func (v6ptr AutoIPv6PTR) ServeDNS(ctx context.Context, writer dns.ResponseWriter
 
 	writer.WriteMsg(message)
 
-	return 0, nil
+	return dns.RcodeSuccess, nil
 }
 
 func RemoveIP6DotArpa(input string) string {
