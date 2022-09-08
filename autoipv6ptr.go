@@ -44,6 +44,8 @@ func (v6ptr AutoIPv6PTR) ServeDNS(ctx context.Context, writer dns.ResponseWriter
 
 		message := new(dns.Msg)
 		message.SetReply(request)
+		message.Authoritative = true
+		message.Rcode = dns.RcodeSuccess
 		hdr := dns.RR_Header{Name: request.Question[0].Name, Ttl: v6ptr.TTL, Class: dns.ClassINET, Rrtype: dns.TypePTR}
 		message.Answer = []dns.RR{&dns.PTR{Hdr: hdr, Ptr: responsePtrValue}}
 
