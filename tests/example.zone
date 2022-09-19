@@ -1,0 +1,12 @@
+$TTL    12h
+@       IN      SOA     example.com. noreply.example.com (
+                        2022091101
+                        3600
+                        900
+                        604800
+                        300 )
+
+@           IN	NS   ns1.example.com.
+@           IN	NS   ns2.example.com.
+
+0.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.3.0.8.b.d.0.1.0.0.2.ip6.arpa. IN PTR success.example.com.

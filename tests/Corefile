@@ -1,0 +1,8 @@
+0.0.3.0.8.b.d.0.1.0.0.2.ip6.arpa {
+    autoipv6ptr {
+        suffix "example.com"
+        ttl 90
+    }
+    file tests/example.zone
+    log
+}
