@@ -35,7 +35,7 @@ Additional benefit: Works with known hosts.
 
 ## Order is everything!
 
-It's necessary that `file` or `seconary` comes right after `autoipv6ptr`! This plugin always calls the next plugin and checks its return. It will only generate a PTR if a negative result comes back.
+It's necessary that `file` or `secondary` comes right after `autoipv6ptr`! This plugin always calls the next plugin and checks its return. It will only generate a PTR if a negative result comes back.
 
 ## Building a ready-to-use coredns binary using Docker
 
